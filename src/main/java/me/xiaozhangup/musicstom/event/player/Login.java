@@ -49,6 +49,22 @@ public class Login {
                         bossBarHashMap.putIfAbsent(event.getPlayer(), bossBar);
                         MinecraftServer.getBossBarManager().addBossBar(event.getPlayer(), bossBar);
                     }
+
+                    new Thread(() -> {
+                        BossBar bossBar = BossBar.bossBar(Component.text("Timer - ").append(event.getEntity().getName()), 0, BossBar.Color.YELLOW, BossBar.Overlay.PROGRESS);
+                        MinecraftServer.getBossBarManager().addBossBar(event.getPlayer(), bossBar);
+                        while (true) {
+                            try {
+                                if ((bossBar.progress() + 0.01f) >= 1f) {
+                                    bossBar.progress(0);
+                                }
+                                bossBar.progress(bossBar.progress() + 0.01f);
+                                Thread.sleep(1000);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
                 })
 
                 .addListener(PlayerUseItemEvent.class, event -> {
@@ -107,12 +123,12 @@ public class Login {
                 .addListener(ItemDropEvent.class, event -> {
                     ItemEntity entity = new ItemEntity(event.getItemStack());
                     entity.setInstance(event.getInstance(), event.getPlayer().getPosition());
-                }
+                })
 
                 .addListener(PickupItemEvent.class, event -> {
-                    ItemEntity entity = new ItemEntity(event.getItemStack());
-                    entity.setInstance(event.getInstance(), event.getPlayer().getPosition());
-                }
+                    Player p = (Player) event.getEntity();
+                    p.getInventory().addItemStack(event.getItemStack());
+                });
 
     }
 
